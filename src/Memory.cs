@@ -46,13 +46,18 @@ namespace Wasmtime
             IsShared = false;
 
         #if WASMTIME_DEV
+        #if NET5_0_OR_GREATER
+            byte pageSizeLog2 = (byte)Math.Log2(PageSize);
+        #else
+            byte pageSizeLog2 = (byte)(Math.Log(PageSize) / Math.Log(2));
+        #endif
             var typeError = Native.wasmtime_memorytype_new(
                 (ulong)minimum,
                 maximum is not null,
                 (ulong)(maximum ?? 0),
                 is64Bit,
                 IsShared,
-                (byte)Math.Log2(PageSize),  // page_size_log2: 16 = 64KB pages (2^16 = 65536)
+                pageSizeLog2,
                 out IntPtr typeHandle);
 
             if (typeError != IntPtr.Zero)
